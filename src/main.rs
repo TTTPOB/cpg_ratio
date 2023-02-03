@@ -74,11 +74,14 @@ struct CpGCounter {
 impl Iterator for CpGCounter {
     type Item = BdgRecord;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_idx + self.window_size as usize > self.record.seq().len() {
+        if self.current_idx > self.record.seq().len() {
             return None;
         }
         let start = self.current_idx;
-        let end = self.current_idx + self.window_size as usize;
+        let end = std::cmp::min(
+            self.current_idx + self.window_size as usize,
+            self.record.seq().len(),
+        );
         let seq = &self.record.seq()[start..end];
         let cpg_count = count_bigram(seq, b"CG");
         let total_bigram_count = seq.len() - 1;
@@ -101,11 +104,14 @@ struct CGCounter {
 impl Iterator for CGCounter {
     type Item = BdgRecord;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_idx + self.window_size as usize > self.record.seq().len() {
+        if self.current_idx > self.record.seq().len() {
             return None;
         }
         let start = self.current_idx;
-        let end = self.current_idx + self.window_size as usize;
+        let end = std::cmp::min(
+            self.current_idx + self.window_size as usize,
+            self.record.seq().len(),
+        );
         let seq = &self.record.seq()[start..end];
         let cg_count = count_base(seq, b"CG");
         let total_base_count = seq.len();
@@ -119,7 +125,6 @@ impl Iterator for CGCounter {
         ))
     }
 }
-
 
 fn main() {
     let app = App::parse();
@@ -138,7 +143,7 @@ fn main() {
                 while let Some(record) = counter.next() {
                     record.writeln(&mut output).unwrap();
                 }
-            },
+            }
             Commands::CpG(args) => {
                 let mut counter = CpGCounter {
                     record,
