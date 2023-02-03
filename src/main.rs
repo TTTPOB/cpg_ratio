@@ -83,10 +83,18 @@ impl BdgRecord {
 }
 
 fn count_bigram(seq: &[u8], bigram: &[u8; 2]) -> u64 {
-    seq.windows(2).filter(|w| w == bigram).count() as u64
+    // case insensitive
+    seq.windows(2)
+        .filter(|w| {
+            w[0].to_ascii_uppercase() == bigram[0] && w[1].to_ascii_uppercase() == bigram[1]
+        })
+        .count() as u64
 }
 fn count_base(seq: &[u8], bases: &[u8]) -> u64 {
-    seq.iter().filter(|b| bases.contains(b)).count() as u64
+    //case insensitive
+    seq.iter()
+        .filter(|b| bases.contains(&b.to_ascii_uppercase()))
+        .count() as u64
 }
 
 struct CGCounter<T: Scoring> {
